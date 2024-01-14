@@ -8,11 +8,15 @@ import pandas as pd
 from mlxtend.preprocessing import TransactionEncoder
 
 
+
+
 class Strimlit(object):
 
     def __init__(self):
         self.title = 'Implementasi BAT Algorithm pada FP-Growth'
         self.sub = 'Upload File transaksi anda'
+        self.df_bat = pd.DataFrame()
+        self.session_clicked = False
 
 
     def ObjectFunction(self,params,df_trans):
@@ -76,6 +80,10 @@ class Strimlit(object):
 
         # Mengembalikan posisi terbaik (parameter yang dioptimalkan)
         return best_solution
+    
+    def onClickBtn(self):
+        self.session_clicked = True
+
 
         
 
@@ -103,7 +111,6 @@ class Strimlit(object):
 
            
         with st.spinner('Creating Graph from dataframe'):
-
             if st.button("Tampilkan Deskriptif data",type='primary' ):
                 jml_uniq = df['id_produk'].nunique()
                 jml_transaksi = df['id_produk'].count()
@@ -159,13 +166,34 @@ class Strimlit(object):
                             The Bat algorithm is a population-based metaheuristics algorithm for solving continuous optimization problems. It’s been used to optimize solutions in cloud computing, feature selection, image processing, and control engineering problems.
                             </h4>
                         """,unsafe_allow_html=True)
-        
-        df_result = df.groupby(['order_no', 'id_produk']).agg(order=('id_produk', 'count')).reset_index()
-        transactions = df.groupby('order_no')['id_produk'].apply(list).tolist()
-        te = TransactionEncoder()
-        te_ary = te.fit(transactions).transform(transactions)
-        df_encoded = pd.DataFrame(te_ary, columns=te.columns_)
-        df_encoded
+            
+            st.button('Ambil Data untuk BAT',type='primary',key='button1')
+            
+        # st.write(st.session_state.button)
+        if st.session_state.button1:
+            # st.text('berhasilk')
+            df_result = df.groupby(['order_no', 'id_produk']).agg(order=('id_produk', 'count')).reset_index()
+            transactions = df.groupby('order_no')['id_produk'].apply(list).tolist()
+            te = TransactionEncoder()
+            te_ary = te.fit(transactions).transform(transactions)
+            df_encoded = pd.DataFrame(te_ary, columns=te.columns_)
+            st.toast('Data Berhasil diambil')
+            col1,col2 = st.columns(2)
+
+            with col1: 
+                st.subheader('data per item')
+                st.dataframe(df_result.head())
+
+            with col2:
+                st.subheader('data item hasil encode')
+                st.dataframe(df_encoded.head())
+
+
+            st.text_input   
+
+
+
+
 
 obj = Strimlit()
 obj.main()
