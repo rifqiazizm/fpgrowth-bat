@@ -89,21 +89,32 @@ class Strimlit(object):
 
     def main(self):
         st.set_page_config(page_title="Association Rule ",layout='wide')
-        st.header(self.title)
-        st.subheader(self.sub)
         st.markdown("""
-        <style>
-        div.stButton {text-align:center}
-        </style>""", unsafe_allow_html=True)
+            <style>
+            div.stButton {text-align:center}
+            </style>""", unsafe_allow_html=True)
 
+        st.markdown("""
+                        <h2 style='text-align:center;' > 
+                            Implementasi BAT Algorithm pada FP-Growth
+                        </h2>
+                    """,unsafe_allow_html=True)
+        st.text('')
+        st.text('')
+        st.text('')
+        st.text('')
+        st.text('')
 
-        file_upload = st.file_uploader('')
-        st.markdown("***")
+        file_upload = st.file_uploader('Upload File Transaksi Anda')
+        # st.markdown("***")
+        st.text('')
         
         
         if file_upload is not None:
             
-        
+            
+            st.text('')
+            st.text('')
             df = pd.read_csv(file_upload)
             st.dataframe(df.head(10),use_container_width=True)
             st.text("")
@@ -146,52 +157,84 @@ class Strimlit(object):
                     st.pyplot(fig1)
 
         st.markdown("***")
-        st.markdown("***")
+       
         st.markdown("""
                         <h2 style='text-align:center;' > 
                             Bat Optimization Algorithm
                         </h2>
+                        
                     """,unsafe_allow_html=True)
+        st.markdown("***")
+        
         st.text('')
-        col1,col2 = st.columns(2)
 
-        with col1:
-            st.image('bat.jpg',caption="")
+        
+        
 
-        with col2:
-            st.markdown(""" 
+        
+        st.markdown(""" 
                             <h4
                                 style='text-align:justify;'
                             >
                             The Bat algorithm is a population-based metaheuristics algorithm for solving continuous optimization problems. It’s been used to optimize solutions in cloud computing, feature selection, image processing, and control engineering problems.
                             </h4>
                         """,unsafe_allow_html=True)
+        st.text('')
+        st.text('')
+        col1,col2 = st.columns(2)
+
+        with col1:
+            st.image('bat2.jpg',caption="")
+
+        with col2:
+            st.image('bat3.jpg',caption="")
             
-            st.button('Ambil Data untuk BAT',type='primary',key='button1')
-            
+        st.text('')
+        st.text('')
+
+        kol1,kol2,kol3 = st.columns(3)
+
+        with kol2:
+            st.button('Ambil Data untuk BAT',type='primary',key='button1',use_container_width=True)
         # st.write(st.session_state.button)
-        if st.session_state.button1:
-            # st.text('berhasilk')
-            df_result = df.groupby(['order_no', 'id_produk']).agg(order=('id_produk', 'count')).reset_index()
-            transactions = df.groupby('order_no')['id_produk'].apply(list).tolist()
-            te = TransactionEncoder()
-            te_ary = te.fit(transactions).transform(transactions)
-            df_encoded = pd.DataFrame(te_ary, columns=te.columns_)
-            st.toast('Data Berhasil diambil')
-            col1,col2 = st.columns(2)
+        with st.spinner('Transforming data from pandas'):
+            if st.session_state.button1:
+                # st.text('berhasilk')
+                df_result = df.groupby(['order_no', 'id_produk']).agg(order=('id_produk', 'count')).reset_index()
+                transactions = df.groupby('order_no')['id_produk'].apply(list).tolist()
+                te = TransactionEncoder()
+                te_ary = te.fit(transactions).transform(transactions)
+                df_encoded = pd.DataFrame(te_ary, columns=te.columns_)
+                st.toast('Data Berhasil diambil',)
+                col1,col2 = st.columns(2)
 
-            with col1: 
-                st.subheader('data per item')
-                st.dataframe(df_result.head())
+                st.text('')
+                st.text('')
+                st.text('')
 
-            with col2:
-                st.subheader('data item hasil encode')
-                st.dataframe(df_encoded.head())
-
-
-            st.text_input   
+                with col2: 
+                    st.text('data per item')
+                    st.dataframe(df_result.head(),use_container_width=True)
 
 
+                with col1:
+                    st.text('data item hasil encode')
+                    st.dataframe(df_encoded.head(),use_container_width=True)
+
+
+
+                
+                st.text('')
+                st.markdown("***")
+        
+                
+                lol1,lol2 = st.columns(2)
+                with lol1:
+                    minSupp = st.text_input("Input Minimal Support")
+                    maxSupp = st.text_input('Input Max Support')
+                    minConf = st.text_input('Input Minimal Confidence ')
+                    maxConf = st.text_input('Input Max Confidence ')
+                    
 
 
 
