@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from mlxtend.frequent_patterns import fpgrowth
 from mlxtend.frequent_patterns import association_rules
-
+import numpy as np
 import pandas as pd
 from mlxtend.preprocessing import TransactionEncoder
 
@@ -17,7 +17,9 @@ class Strimlit(object):
         self.sub = 'Upload File transaksi anda'
         self.df_bat = pd.DataFrame()
         self.session_clicked = False
-
+        self.bat_func = []
+        self.df_encoded = pd.DataFrame()
+        self.out = {}
 
     def ObjectFunction(self,params,df_trans):
         min_support = params[0] 
@@ -28,33 +30,33 @@ class Strimlit(object):
             return 0
         rule_ = association_rules(frequent_patterns, metric="confidence", min_threshold= min_confidence)
         
-        return  rule_['lift'].sum()
+        return  rule_['confidence'].mean() /rule_['support'].mean()
 
 
-    def bat_algorithm(self,num_bats, num_iterations,df_masuk):
+    def bat_algorithm(self,num_bats, num_iterations,lower_sup,upper_sup,lower_conf,upper_conf,loudness,pulse_rate,df_masuk):
         # Inisialisasi parameter Bat Algorithm
         num_dimensions = 2  # Jumlah parameter yang ingin dioptimalkan (min_support, min_confidence)
-        lower_bound = np.array([0.6, 0.85])  # Batas bawah untuk setiap parameter
-        upper_bound = np.array([1.5, 1.9])  # Batas atas untuk setiap parameter
-        loudness = 0.5  # Inisialisasi nilai loudness
-        pulse_rate = 0.3  # Inisialisasi nilai pulse rate
+        lower_bound = np.array([float(lower_sup), float(lower_conf)])  # Batas bawah untuk setiap parameter
+        upper_bound = np.array([float(upper_sup), float(upper_conf)])  # Batas atas untuk setiap parameter
+        loudness = float(loudness)  # Inisialisasi nilai loudness
+        pulse_rate = float(pulse_rate)  # Inisialisasi nilai pulse rate
         lower_freq = 0.2983
         highest_freq = 0.923
 
         # Inisialisasi posisi kelelawar secara acak di dalam batas pencarian
-        bats = np.random.uniform(lower_bound, upper_bound, (num_bats, num_dimensions))
+        bats = np.random.uniform(lower_bound, upper_bound, (int(num_bats), num_dimensions))
         # Inisialisasi kecepatan dan posisi awal
-        velocities = np.zeros((num_bats, num_dimensions))
-        frequencies = np.zeros(num_bats)
+        velocities = np.zeros((int(num_bats), num_dimensions))
+        frequencies = np.zeros(int(num_bats))
 
         # Inisialisasi posisi terbaik
         best_solution_index = 0
         best_solution = bats[best_solution_index]
 
         # Iterasi Bat Algorithm
-        for _ in range(num_iterations):
+        for _ in range(int(num_iterations)):
             # Update posisi kelelawar
-            for i in range(num_bats):
+            for i in range(int(num_bats)):
                 # Pembaruan frekuensi dan posisi berdasarkan pulsasi
                 # if np.random.random() > frequencies[i]:
                     # velocities[i] += (bats[i] - bats.mean(axis=0)) * loudness
@@ -62,7 +64,7 @@ class Strimlit(object):
                 frequencies[i] = lower_freq + (highest_freq - lower_freq) * np.random.uniform(0,1)
                 velocities[i] = velocities[i] + (bats[i] - best_solution) * frequencies[i]
 
-                if np.random.random() > pulse_rate:
+                if np.random.random() > float(pulse_rate):
                     alpha = 0.03
                     bats[i] = best_solution + alpha * np.random.uniform(0,1)
 
@@ -72,14 +74,21 @@ class Strimlit(object):
                 bats[i] = np.clip(bats[i] + velocities[i], lower_bound, upper_bound)
 
             # Evaluasi setiap kelelawar
-            for i in range(num_bats):
+            for i in range(int(num_bats)):
                 current_evaluation = self.ObjectFunction(bats[i],df_masuk)
+                self.bat_func.append({
+                    'val' : bats[i],
+                    'output' : current_evaluation
+                })
                 # Jika nilai evaluasi lebih baik, update posisi terbaik
                 if current_evaluation > self.ObjectFunction(best_solution,df_masuk):
                     best_solution = bats[i]
 
         # Mengembalikan posisi terbaik (parameter yang dioptimalkan)
-        return best_solution
+        return {
+                    'best' : best_solution,
+                    'hist' : bats   
+                }
     
     def onClickBtn(self):
         self.session_clicked = True
@@ -89,21 +98,32 @@ class Strimlit(object):
 
     def main(self):
         st.set_page_config(page_title="Association Rule ",layout='wide')
-        st.header(self.title)
-        st.subheader(self.sub)
         st.markdown("""
-        <style>
-        div.stButton {text-align:center}
-        </style>""", unsafe_allow_html=True)
+            <style>
+            div.stButton {text-align:center}
+            </style>""", unsafe_allow_html=True)
 
+        st.markdown("""
+                        <h2 style='text-align:center;' > 
+                            Implementasi BAT Algorithm pada FP-Growth
+                        </h2>
+                    """,unsafe_allow_html=True)
+        st.text('')
+        st.text('')
+        st.text('')
+        st.text('')
+        st.text('')
 
-        file_upload = st.file_uploader('')
-        st.markdown("***")
+        file_upload = st.file_uploader('Upload File Transaksi Anda')
+        # st.markdown("***")
+        st.text('')
         
         
         if file_upload is not None:
             
-        
+            
+            st.text('')
+            st.text('')
             df = pd.read_csv(file_upload)
             st.dataframe(df.head(10),use_container_width=True)
             st.text("")
@@ -146,52 +166,124 @@ class Strimlit(object):
                     st.pyplot(fig1)
 
         st.markdown("***")
-        st.markdown("***")
+       
         st.markdown("""
                         <h2 style='text-align:center;' > 
                             Bat Optimization Algorithm
                         </h2>
+                        
                     """,unsafe_allow_html=True)
+        st.markdown("***")
+        
         st.text('')
-        col1,col2 = st.columns(2)
 
-        with col1:
-            st.image('bat.jpg',caption="")
+        
+        
 
-        with col2:
-            st.markdown(""" 
+        
+        st.markdown(""" 
                             <h4
                                 style='text-align:justify;'
                             >
                             The Bat algorithm is a population-based metaheuristics algorithm for solving continuous optimization problems. It’s been used to optimize solutions in cloud computing, feature selection, image processing, and control engineering problems.
                             </h4>
                         """,unsafe_allow_html=True)
+        st.text('')
+        st.text('')
+        col1,col2 = st.columns(2)
+
+        with col1:
+            st.image('bat2.jpg',caption="")
+
+        with col2:
+            st.image('bat3.jpg',caption="")
             
-            st.button('Ambil Data untuk BAT',type='primary',key='button1')
-            
+        st.text('')
+        st.text('')
+
+        kol1,kol2,kol3 = st.columns(3)
+
+        with kol2:
+            st.button('Ambil Data untuk BAT',type='primary',key='button1',use_container_width=True)
         # st.write(st.session_state.button)
-        if st.session_state.button1:
-            # st.text('berhasilk')
-            df_result = df.groupby(['order_no', 'id_produk']).agg(order=('id_produk', 'count')).reset_index()
-            transactions = df.groupby('order_no')['id_produk'].apply(list).tolist()
-            te = TransactionEncoder()
-            te_ary = te.fit(transactions).transform(transactions)
-            df_encoded = pd.DataFrame(te_ary, columns=te.columns_)
-            st.toast('Data Berhasil diambil')
-            col1,col2 = st.columns(2)
+        with st.spinner('Transforming data from pandas'):
+            if st.session_state.button1:
+                # st.text('berhasilk')
+                df_result = df.groupby(['order_no', 'id_produk']).agg(order=('id_produk', 'count')).reset_index()
+                transactions = df.groupby('order_no')['id_produk'].apply(list).tolist()
+                te = TransactionEncoder()
+                te_ary = te.fit(transactions).transform(transactions)
+                self.df_encoded = pd.DataFrame(te_ary, columns=te.columns_)
+                st.toast('Data Berhasil diambil',)
+                col1,col2 = st.columns(2)
 
-            with col1: 
-                st.subheader('data per item')
-                st.dataframe(df_result.head())
+                st.text('')
+                st.text('')
+                st.text('')
 
-            with col2:
-                st.subheader('data item hasil encode')
-                st.dataframe(df_encoded.head())
-
-
-            st.text_input   
+                with col2: 
+                    st.text('data per item')
+                    st.dataframe(df_result.head(),use_container_width=True)
 
 
+                with col1:
+                    st.text('data item hasil encode')
+                    st.dataframe(self.df_encoded.head(),use_container_width=True)
+
+
+
+                
+                st.text('')
+                st.markdown("***")
+        
+                
+        lol1,lol2 = st.columns(2)
+        
+        st.session_state['Exec'] = False
+        with lol1:
+            with st.form(key='bat'):
+                bat = st.text_input("Input jml kelelawar")
+                iterat = st.text_input("Input jml iterasi")
+                minSupp = st.text_input("Input Minimal Support")
+                maxSupp = st.text_input('Input Max Support')
+                minConf = st.text_input('Input Minimal Confidence ')
+                maxConf = st.text_input('Input Max Confidence ')
+                loudness= st.text_input('Input Loudness ')
+                pulse   = st.text_input('Input Pulse Rate')
+                button = st.form_submit_button(label='Eksekusi BAT algorithm',type='primary')
+                
+                if button:
+                    st.text('okeee')
+                    st.session_state['Exec'] = True
+                    with st.spinner("Mengeksekusi algorithma BAT"):
+                        st.toast('executing bat')
+                        self.out  = self.bat_algorithm(
+                            df_masuk=self.df_encoded,
+                            num_bats=bat,
+                            num_iterations=iterat,
+                            lower_sup=minSupp,
+                            upper_sup=maxSupp,
+                            lower_conf=minConf,
+                            upper_conf=maxConf,
+                            loudness=loudness,
+                            pulse_rate=pulse
+                        )
+                 
+                        
+
+        with lol2:
+            st.subheader('Nilai Optimal: ')
+            if len(self.out) > 1:
+                st.write(self.out) 
+                st.text('asoooooo')
+                st.success('Bat Algorithm Sudah dieksekusi' )  
+            else:
+                st.warning('Bat algorithm belum dieksekusi') 
+            
+       
+                    
+                    
+                    
 
 
 
