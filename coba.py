@@ -6,8 +6,8 @@ from mlxtend.frequent_patterns import association_rules
 import numpy as np
 import pandas as pd
 from mlxtend.preprocessing import TransactionEncoder
-
-
+import asyncio 
+import time
 
 
 class Strimlit(object):
@@ -21,12 +21,17 @@ class Strimlit(object):
         self.df_encoded = pd.DataFrame()
         self.out = {}
         self.best_sol = [0,0]
+        self.objFunc = []
+
+
 
     def ObjectFunction(self,params,df_trans):
-        min_support = params[0] 
-        min_confidence = params[1]
-    
+        min_support = float(params[0])
+        min_confidence = float(params[1])
+        
         frequent_patterns= fpgrowth(df_trans, min_support=min_support, use_colnames=True)
+        # self.objFunc.append([len(df_trans)])
+        # time.sleep(0.1)
         if frequent_patterns.empty:
             return 0
         rule_ = association_rules(frequent_patterns, metric="confidence", min_threshold= min_confidence)
@@ -73,23 +78,26 @@ class Strimlit(object):
 
 
                 # Batasan posisi kelelawar dalam batas pencarian
-                bats[i] = np.clip(bats[i] + velocities[i], lower_bound, upper_bound)
+                batsTemp = np.clip(bats[i] + velocities[i], lower_bound, upper_bound)
                 # bats[i] = bats[i] + velocities[i]
                     
                 
-                Ftemp = self.ObjectFunction(params=bats[i],df_trans=df_masuk)
+                Ftemp =  self.ObjectFunction(params=batsTemp,df_trans=df_masuk)
+                # time.sleep(0.1)
                 print(Ftemp)
-                if Ftemp > outputFunc[i] and np.random.uniform(0.001,0.009) < loudness:
-                    outputFunc[i] = self.ObjectFunction(params=bats[i],df_trans=df_masuk)
+                if Ftemp > outputFunc[i] and np.random.rand() < loudness:
+                    outputFunc[i] = Ftemp
+                    bats[i] = batsTemp
                     trig+=1
 
                 if Ftemp > max(outputFunc):
-                    best_solution = bats[i]
+                    best_solution = batsTemp
                     self.best_sol = bats[i]
 
                 self.bat_func.append({
                     'val' : bats[i],
-                    'output' : float(Ftemp)
+                    'val2' : batsTemp,
+                    'output' : self.ObjectFunction(params=batsTemp,df_trans=df_masuk)
                 })
 
             # Evaluasi setiap kelelawar
@@ -106,6 +114,7 @@ class Strimlit(object):
         # Mengembalikan posisi terbaik (parameter yang dioptimalkan)
         return {
                     'best' : best_solution,
+                    'parameter' : [num_bats,num_iterations,lower_bound,upper_bound,loudness,pulse_rate],
                     'hist' : bats   ,
                     'trig' : trig
                 }
@@ -117,6 +126,7 @@ class Strimlit(object):
         
 
     def main(self):
+        
         st.set_page_config(page_title="Association Rule ",layout='wide')
         st.markdown("""
             <style>
@@ -236,6 +246,7 @@ class Strimlit(object):
                 te = TransactionEncoder()
                 te_ary = te.fit(transactions).transform(transactions)
                 self.df_encoded = pd.DataFrame(te_ary, columns=te.columns_)
+                st.session_state['df_encoded'] = pd.DataFrame(te_ary, columns=te.columns_)
                 st.toast('Data Berhasil diambil',)
                 col1,col2 = st.columns(2)
 
@@ -273,14 +284,17 @@ class Strimlit(object):
                 loudness= st.text_input('Input Loudness ')
                 pulse   = st.text_input('Input Pulse Rate')
                 button = st.form_submit_button(label='Eksekusi BAT algorithm',type='primary')
-                
+                st.write(st.session_state['df_encoded'])
                 if button:
                     st.text('okeee')
-                    st.session_state['Exec'] = True
                     with st.spinner("Mengeksekusi algorithma BAT"):
-                        st.toast('executing bat')
+                        transactions = df.groupby('order_no')['id_produk'].apply(list).tolist()
+                        te = TransactionEncoder()
+                        te_ary = te.fit(transactions).transform(transactions)
+                        df_input = pd.DataFrame(te_ary, columns=te.columns_)
+                        st.toast('executing bat with '+str(len(df_input)))
                         self.out  = self.bat_algorithm(
-                            df_masuk=self.df_encoded,
+                            df_masuk=df_input,
                             num_bats=bat,
                             num_iterations=iterat,
                             lower_sup=minSupp,
@@ -298,7 +312,7 @@ class Strimlit(object):
             if len(self.out) > 1:
                 st.write(self.out) 
                 st.write(self.bat_func)
-                # st.text('asoooooo')
+                st.text('asoooooo')
                 st.success('Bat Algorithm Sudah dieksekusi' )  
             else:
                 st.warning('Bat algorithm belum dieksekusi') 
@@ -318,6 +332,6 @@ class Strimlit(object):
                     
 
 
-
+st.session_state['df_encoded'] = pd.DataFrame()
 obj = Strimlit()
 obj.main()
