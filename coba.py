@@ -20,6 +20,7 @@ class Strimlit(object):
         self.bat_func = []
         self.df_encoded = pd.DataFrame()
         self.out = {}
+        self.best_sol = [0,0]
 
     def ObjectFunction(self,params,df_trans):
         min_support = params[0] 
@@ -40,9 +41,9 @@ class Strimlit(object):
         upper_bound = np.array([float(upper_sup), float(upper_conf)])  # Batas atas untuk setiap parameter
         loudness = float(loudness)  # Inisialisasi nilai loudness
         pulse_rate = float(pulse_rate)  # Inisialisasi nilai pulse rate
-        lower_freq = 0.2983
-        highest_freq = 0.923
-
+        lower_freq = 0.0002983
+        highest_freq = 0.000923
+        trig = 0
         # Inisialisasi posisi kelelawar secara acak di dalam batas pencarian
         bats = np.random.uniform(lower_bound, upper_bound, (int(num_bats), num_dimensions))
         # Inisialisasi kecepatan dan posisi awal
@@ -51,7 +52,8 @@ class Strimlit(object):
 
         # Inisialisasi posisi terbaik
         best_solution_index = 0
-        best_solution = bats[best_solution_index]
+        best_solution = [0,0]
+        outputFunc = np.zeros(int(num_bats))
 
         # Iterasi Bat Algorithm
         for _ in range(int(num_iterations)):
@@ -61,33 +63,51 @@ class Strimlit(object):
                 # if np.random.random() > frequencies[i]:
                     # velocities[i] += (bats[i] - bats.mean(axis=0)) * loudness
                     # frequencies[i] = pulse_rate * (1 - np.exp(-1 * np.random.random()))  # Update frekuensi
-                frequencies[i] = lower_freq + (highest_freq - lower_freq) * np.random.uniform(0,1)
+                frequencies[i] = lower_freq + (highest_freq - lower_freq) * np.random.random()
                 velocities[i] = velocities[i] + (bats[i] - best_solution) * frequencies[i]
 
                 if np.random.random() > float(pulse_rate):
                     alpha = 0.03
-                    bats[i] = best_solution + alpha * np.random.uniform(0,1)
+                    bats[i] = best_solution + alpha * np.random.uniform(0,1,size=2)
 
 
 
                 # Batasan posisi kelelawar dalam batas pencarian
                 bats[i] = np.clip(bats[i] + velocities[i], lower_bound, upper_bound)
+                # bats[i] = bats[i] + velocities[i]
+                    
+                
+                Ftemp = self.ObjectFunction(params=bats[i],df_trans=df_masuk)
+                print(Ftemp)
+                if Ftemp > outputFunc[i] and np.random.uniform(0.001,0.009) < loudness:
+                    outputFunc[i] = self.ObjectFunction(params=bats[i],df_trans=df_masuk)
+                    trig+=1
 
-            # Evaluasi setiap kelelawar
-            for i in range(int(num_bats)):
-                current_evaluation = self.ObjectFunction(bats[i],df_masuk)
+                if Ftemp > max(outputFunc):
+                    best_solution = bats[i]
+                    self.best_sol = bats[i]
+
                 self.bat_func.append({
                     'val' : bats[i],
-                    'output' : current_evaluation
+                    'output' : float(Ftemp)
                 })
-                # Jika nilai evaluasi lebih baik, update posisi terbaik
-                if current_evaluation > self.ObjectFunction(best_solution,df_masuk):
-                    best_solution = bats[i]
+
+            # Evaluasi setiap kelelawar
+            # for i in range(int(num_bats)):
+            #     current_evaluation = self.ObjectFunction(bats[i],df_masuk)
+            #     self.bat_func.append({
+            #         'val' : bats[i],
+            #         'output' : current_evaluation
+            #     })
+            #     # Jika nilai evaluasi lebih baik, update posisi terbaik
+            #     if current_evaluation > self.ObjectFunction(best_solution,df_masuk):
+            #         best_solution = bats[i]
 
         # Mengembalikan posisi terbaik (parameter yang dioptimalkan)
         return {
                     'best' : best_solution,
-                    'hist' : bats   
+                    'hist' : bats   ,
+                    'trig' : trig
                 }
     
     def onClickBtn(self):
@@ -205,6 +225,8 @@ class Strimlit(object):
 
         with kol2:
             st.button('Ambil Data untuk BAT',type='primary',key='button1',use_container_width=True)
+            st.text('')
+            st.text('')
         # st.write(st.session_state.button)
         with st.spinner('Transforming data from pandas'):
             if st.session_state.button1:
@@ -275,13 +297,23 @@ class Strimlit(object):
             st.subheader('Nilai Optimal: ')
             if len(self.out) > 1:
                 st.write(self.out) 
-                st.text('asoooooo')
+                st.write(self.bat_func)
+                # st.text('asoooooo')
                 st.success('Bat Algorithm Sudah dieksekusi' )  
             else:
                 st.warning('Bat algorithm belum dieksekusi') 
             
        
-                    
+        
+        st.markdown("***")
+       
+        st.markdown("""
+                        <h2 style='text-align:center;' > 
+                            Bat Optimization Algorithm
+                        </h2>
+                        
+                    """,unsafe_allow_html=True)
+        st.markdown("***") 
                     
                     
 
