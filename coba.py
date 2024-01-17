@@ -13,7 +13,7 @@ import time
 
 
 
-
+ 
 
 
 class Strimlit(object):
@@ -33,18 +33,19 @@ class Strimlit(object):
         self.out = {}
         self.best_sol = [0,0]
         self.objFunc = []
+        self.frequent_patterns = pd.DataFrame()
 
 
 
     def fpGrowth(self,min_support,min_confidence,df_input ):
-        frequent_patterns= fpgrowth(df_input, min_support=min_support, use_colnames=True)
-
-        if frequent_patterns.empty:
+        freqP= fpgrowth(df_input, min_support=min_support, use_colnames=True)
+        self.frequent_patterns = freqP
+        if freqP.empty:
             return 0
         
-        rule_ = association_rules(frequent_patterns, metric="confidence", min_threshold= min_confidence)
+        rule_ = association_rules(freqP, metric="confidence", min_threshold= min_confidence)
         
-        return  {rule_['confidence'].mean() /rule_['support'].mean()}
+        return  rule_
 
 
 
@@ -402,9 +403,11 @@ class Strimlit(object):
         kolom1,kolom2 = st.columns(2)
         st.text("")
         st.text("")  
+        
 
         with kolom1:
             st.image('fp-growth.png',caption="",use_column_width=True)
+
 
         with kolom2:
             st.text("")
@@ -416,9 +419,32 @@ class Strimlit(object):
             st.text("")  
             st.markdown(' ##### The FP-Growth Algorithm is an alternative way to find frequent item sets without using candidate generations, thus improving performance. For so much, it uses a divide-and-conquer strategy. The core of this method is the usage of a special data structure named frequent-pattern tree (FP-tree), which retains the item set association information.')
 
+        
+
+        koll1,koll2 = st.columns(2)
+        
+        with koll1:
+            fp = st.form('fp-growth')
+            minSupport = fp.text_input('Minimal Support FP Growth')
+            minConfidence = fp.text_input('Minimal Confidence FP Growth')
+            st.text("")
+            submitFP = fp.form_submit_button('Eksekusi FP Growth' , type='primary')
+  
             
+        with koll2:
+            st.subheader('Hasil Algoritma FP Growth: ')
+            if submitFP:
+                with st.spinner('Eksekusi FP Growth'):
+                    transactions = df.groupby('order_no')['id_produk'].apply(list).tolist()
+                    te = TransactionEncoder()
+                    te_ary = te.fit(transactions).transform(transactions)
+                    self.df_encoded = pd.DataFrame(te_ary, columns=te.columns_)
+                    st.toast('FP Growth Sedang Dieksekusi dengan dataframe' +str(len(self.df_encoded)))
+                    outFP = self.fpGrowth(float(minSupport), float(minConfidence), self.df_encoded)
+                    st.write(outFP)
 
 
+        
                     
 
 
