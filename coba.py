@@ -36,6 +36,19 @@ class Strimlit(object):
 
 
 
+    def fpGrowth(self,min_support,min_confidence,df_input ):
+        frequent_patterns= fpgrowth(df_input, min_support=min_support, use_colnames=True)
+
+        if frequent_patterns.empty:
+            return 0
+        
+        rule_ = association_rules(frequent_patterns, metric="confidence", min_threshold= min_confidence)
+        
+        return  {rule_['confidence'].mean() /rule_['support'].mean()}
+
+
+
+
     def ObjectFunction(self,params,df_trans):
         min_support = float(params[0])
         min_confidence = float(params[1])
@@ -103,18 +116,21 @@ class Strimlit(object):
                 print("output dari outputFunc" + str(outputFunc[i] ))
                 print(Ftemp > outputFunc[i] and np.random.rand() < loudness)
                 
+
                 if Ftemp > outputFunc[i] and np.random.rand() < loudness:
-                    outputFunc[i] = Ftemp
-                    bats[i] = batsTemp
+                    
                     print('HIT DISINI')
                     
                     print('Ftemp > max(outputFunc)' + str(Ftemp > max(outputFunc)))
+                    print('max(outputFunc)' + str(max(outputFunc)))
                     if Ftemp > max(outputFunc):
                         best_solution = batsTemp
     
                         print('hit disana')
                         trig+=1
-
+                    outputFunc[i] = Ftemp
+                    bats[i] = batsTemp
+                print('-----------------------------------------------------------------')
                 self.bat_func.append({
                     'val' : bats[i],
                     'trig' : trig,
@@ -384,7 +400,25 @@ class Strimlit(object):
         st.markdown("***") 
 
         kolom1,kolom2 = st.columns(2)
- 
+        st.text("")
+        st.text("")  
+
+        with kolom1:
+            st.image('fp-growth.png',caption="",use_column_width=True)
+
+        with kolom2:
+            st.text("")
+            st.text("")  
+            st.text("")
+            st.text("")
+            st.text("")  
+            st.text("")
+            st.text("")  
+            st.markdown(' ##### The FP-Growth Algorithm is an alternative way to find frequent item sets without using candidate generations, thus improving performance. For so much, it uses a divide-and-conquer strategy. The core of this method is the usage of a special data structure named frequent-pattern tree (FP-tree), which retains the item set association information.')
+
+            
+
+
                     
 
 
