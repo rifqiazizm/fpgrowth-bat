@@ -236,6 +236,8 @@ class Strimlit(object):
 
                     st.pyplot(fig1)
 
+               
+
         st.markdown("***")
        
         st.markdown("""
@@ -305,10 +307,9 @@ class Strimlit(object):
             st.dataframe(self.df_encoded.head() ,use_container_width=True)
 
 
-
                 
-            st.text('')
-            st.markdown("***")
+        st.text('')
+        st.markdown("***")
         
                 
         lol1,lol2 = st.columns(2)
@@ -441,6 +442,9 @@ class Strimlit(object):
                     self.df_encoded = pd.DataFrame(te_ary, columns=te.columns_)
                     st.toast('FP Growth Sedang Dieksekusi dengan dataframe' +str(len(self.df_encoded)))
                     outFP = self.fpGrowth(float(minSupport), float(minConfidence), self.df_encoded)
+
+                    # viz = st.bar_chart(self.frequent_patterns.sort_values(by='support',ascending=False).head(10))
+                    st.write(self.df_encoded)
                     st.write(outFP)
 
 
