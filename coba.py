@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 from mlxtend.frequent_patterns import fpgrowth
 from mlxtend.frequent_patterns import association_rules
 import numpy as np
-import pandas as pd
 from mlxtend.preprocessing import TransactionEncoder
 import asyncio 
 import time
