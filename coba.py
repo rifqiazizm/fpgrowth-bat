@@ -9,14 +9,25 @@ import asyncio
 import time
 
 
+
+
+
+
+
+
+
 class Strimlit(object):
+
+
+
 
     def __init__(self):
         self.title = 'Implementasi BAT Algorithm pada FP-Growth'
         self.sub = 'Upload File transaksi anda'
         self.df_bat = pd.DataFrame()
+        self.df_result = pd.DataFrame()
         self.session_clicked = False
-        self.session_bat = st.session_state['batExec'] = 0
+        st.session_state['batExec'] = 0
         self.bat_func = []
         self.df_encoded = pd.DataFrame()
         self.out = {}
@@ -39,7 +50,7 @@ class Strimlit(object):
         return  rule_['confidence'].mean() /rule_['support'].mean()
 
 
-    def bat_algorithm(self,num_bats, num_iterations,lower_sup,upper_sup,lower_conf,upper_conf,loudness,pulse_rate,df_masuk):
+    def bat_algorithm(self,num_bats, num_iterations,lower_sup,upper_sup,lower_conf,upper_conf,loudness,pulse_rate,df_masuk,progress):
         # Inisialisasi parameter Bat Algorithm
         num_dimensions = 2  # Jumlah parameter yang ingin dioptimalkan (min_support, min_confidence)
         lower_bound = np.array([float(lower_sup), float(lower_conf)])  # Batas bawah untuk setiap parameter
@@ -54,11 +65,13 @@ class Strimlit(object):
         # Inisialisasi kecepatan dan posisi awal
         velocities = np.zeros((int(num_bats), num_dimensions))
         frequencies = np.zeros(int(num_bats))
-
+        
         # Inisialisasi posisi terbaik
         best_solution_index = 0
         best_solution = [0,0]
         outputFunc = np.zeros(int(num_bats))
+        proses = 0
+
 
         # Iterasi Bat Algorithm
         for _ in range(int(num_iterations)):
@@ -74,8 +87,10 @@ class Strimlit(object):
                 if np.random.random() > float(pulse_rate):
                     alpha = 0.03
                     bats[i] = best_solution + alpha * np.random.uniform(0,1,size=2)
+                
 
-
+                progress.progress(( ((proses+ 1) / (int(num_iterations) * int(num_bats))) )  )
+                proses+=1
 
                 # Batasan posisi kelelawar dalam batas pencarian
                 batsTemp = np.clip(bats[i] + velocities[i], lower_bound, upper_bound)
@@ -84,18 +99,25 @@ class Strimlit(object):
                 
                 Ftemp =  self.ObjectFunction(params=batsTemp,df_trans=df_masuk)
                 # time.sleep(0.1)
-                print(Ftemp)
+                print("output dari Ftemp" + str(Ftemp))
+                print("output dari outputFunc" + str(outputFunc[i] ))
+                print(Ftemp > outputFunc[i] and np.random.rand() < loudness)
+                
                 if Ftemp > outputFunc[i] and np.random.rand() < loudness:
                     outputFunc[i] = Ftemp
                     bats[i] = batsTemp
-                    trig+=1
-
-                if Ftemp > max(outputFunc):
-                    best_solution = batsTemp
-                    self.best_sol = bats[i]
+                    print('HIT DISINI')
+                    
+                    print('Ftemp > max(outputFunc)' + str(Ftemp > max(outputFunc)))
+                    if Ftemp > max(outputFunc):
+                        best_solution = batsTemp
+    
+                        print('hit disana')
+                        trig+=1
 
                 self.bat_func.append({
                     'val' : bats[i],
+                    'trig' : trig,
                     'val2' : batsTemp,
                     'output' : self.ObjectFunction(params=batsTemp,df_trans=df_masuk)
                 })
@@ -112,22 +134,24 @@ class Strimlit(object):
             #         best_solution = bats[i]
 
         # Mengembalikan posisi terbaik (parameter yang dioptimalkan)
+        print(outputFunc)
         return {
-                    'best' : best_solution,
+                    'best solution' : best_solution,
                     'parameter' : [num_bats,num_iterations,lower_bound,upper_bound,loudness,pulse_rate],
-                    'hist' : bats   ,
-                    'trig' : trig
+                    'Nilai Kelelawar' : bats ,
                 }
     
+
+
+
     def onClickBtn(self):
         self.session_clicked = True
 
 
-        
-
     def main(self):
         
         st.set_page_config(page_title="Association Rule ",layout='wide')
+        
         st.markdown("""
             <style>
             div.stButton {text-align:center}
@@ -241,33 +265,33 @@ class Strimlit(object):
         with st.spinner('Transforming data from pandas'):
             if st.session_state.button1:
                 # st.text('berhasilk')
-                df_result = df.groupby(['order_no', 'id_produk']).agg(order=('id_produk', 'count')).reset_index()
+                self.df_result = df.groupby(['order_no', 'id_produk']).agg(order=('id_produk', 'count')).reset_index()
                 transactions = df.groupby('order_no')['id_produk'].apply(list).tolist()
                 te = TransactionEncoder()
                 te_ary = te.fit(transactions).transform(transactions)
                 self.df_encoded = pd.DataFrame(te_ary, columns=te.columns_)
                 st.session_state['df_encoded'] = pd.DataFrame(te_ary, columns=te.columns_)
                 st.toast('Data Berhasil diambil',)
-                col1,col2 = st.columns(2)
+                
 
                 st.text('')
                 st.text('')
                 st.text('')
 
-                with col2: 
-                    st.text('data per item')
-                    st.dataframe(df_result.head(),use_container_width=True)
+        col1,col2 = st.columns(2)
 
-
-                with col1:
-                    st.text('data item hasil encode')
-                    st.dataframe(self.df_encoded.head(),use_container_width=True)
+        with col2: 
+            st.text('data per item')
+            st.dataframe(self.df_result.head() ,use_container_width=True)
+        with col1:
+            st.text('data item hasil encode')
+            st.dataframe(self.df_encoded.head() ,use_container_width=True)
 
 
 
                 
-                st.text('')
-                st.markdown("***")
+            st.text('')
+            st.markdown("***")
         
                 
         lol1,lol2 = st.columns(2)
@@ -284,7 +308,8 @@ class Strimlit(object):
                 loudness= st.text_input('Input Loudness ')
                 pulse   = st.text_input('Input Pulse Rate')
                 button = st.form_submit_button(label='Eksekusi BAT algorithm',type='primary')
-                st.write(st.session_state['df_encoded'])
+                # st.write(st.session_state['df_encoded'])
+                prog = st.progress(value=0, text="progress eksekusi BAT")
                 if button:
                     st.text('okeee')
                     with st.spinner("Mengeksekusi algorithma BAT"):
@@ -302,7 +327,8 @@ class Strimlit(object):
                             lower_conf=minConf,
                             upper_conf=maxConf,
                             loudness=loudness,
-                            pulse_rate=pulse
+                            pulse_rate=pulse,
+                            progress = prog
                         )
                  
                         
@@ -311,11 +337,39 @@ class Strimlit(object):
             st.subheader('Nilai Optimal: ')
             if len(self.out) > 1:
                 st.write(self.out) 
-                st.write(self.bat_func)
-                st.text('asoooooo')
                 st.success('Bat Algorithm Sudah dieksekusi' )  
             else:
-                st.warning('Bat algorithm belum dieksekusi') 
+                st.warning('Bat algorithm belum dieksekusi')
+
+            xSupport    =  [a['val2'][0] for a in self.bat_func]
+            xConfidence =  [a['val2'][1] for a in self.bat_func]
+            yOutput = [a['output'] for a in self.bat_func]
+
+
+            tt1,tt2 = st.columns(2)
+
+            
+            dfOut = pd.DataFrame({
+                'support' : xSupport,
+                'confidence' : xConfidence,
+                'output' : yOutput
+
+            })
+            
+            with tt1:
+
+                st.markdown(" #### Grafik nilai support terhadap obj function")
+                st.line_chart(dfOut,x='support',y='output',use_container_width=True)     
+
+            with tt2:
+                st.markdown(" #### Grafik nilai Confidence terhadap obj function")
+                st.line_chart(dfOut,x='confidence',y='output',use_container_width=True)          
+            
+                 
+
+            st.text("")
+            st.text("")  
+
             
        
         
@@ -323,12 +377,14 @@ class Strimlit(object):
        
         st.markdown("""
                         <h2 style='text-align:center;' > 
-                            Bat Optimization Algorithm
+                            FP-Growth Algorithm
                         </h2>
                         
                     """,unsafe_allow_html=True)
         st.markdown("***") 
-                    
+
+        kolom1,kolom2 = st.columns(2)
+ 
                     
 
 
