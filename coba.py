@@ -444,7 +444,7 @@ class Strimlit(object):
                     outFP = self.fpGrowth(float(minSupport), float(minConfidence), self.df_encoded)
 
                     # viz = st.bar_chart(self.frequent_patterns.sort_values(by='support',ascending=False).head(10))
-                    st.write(self.df_encoded)
+                    st.write(self.frequent_patterns)
                     st.write(outFP)
 
 
