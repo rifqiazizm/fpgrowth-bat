@@ -430,6 +430,8 @@ class Strimlit(object):
             minConfidence = fp.text_input('Minimal Confidence FP Growth')
             st.text("")
             submitFP = fp.form_submit_button('Eksekusi FP Growth' , type='primary')
+            
+
   
             
         with koll2:
@@ -444,8 +446,15 @@ class Strimlit(object):
                     outFP = self.fpGrowth(float(minSupport), float(minConfidence), self.df_encoded)
 
                     # viz = st.bar_chart(self.frequent_patterns.sort_values(by='support',ascending=False).head(10))
+                    st.success('Association Rule Berhasil dibentuk!')
+                    if not st.session_state['fpgrowth']:
+                        st.session_state['fpgrowth'] = {
+                            'fp' : self.frequent_patterns,
+                            'output' : outFP
+                        }
+
                     st.write(self.frequent_patterns)
-                    st.write(outFP)
+        st.write(outFP,use_container_width=True)
 
 
         
@@ -455,3 +464,7 @@ class Strimlit(object):
 st.session_state['df_encoded'] = pd.DataFrame()
 obj = Strimlit()
 obj.main()
+
+
+
+
