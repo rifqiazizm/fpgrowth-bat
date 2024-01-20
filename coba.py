@@ -450,7 +450,7 @@ class Strimlit(object):
                 st.toast('FP Growth Sedang Dieksekusi dengan dataframe' +str(len(self.df_encoded)))
                 outFP = self.fpGrowth(float(minSupport), float(minConfidence), self.df_encoded).copy()
                     # viz = st.bar_chart(self.frequent_patterns.sort_values(by='support',ascending=False).head(10))
-                # outFP['set_item'] = outFP['itemsets'].apply(lambda ss: [list(x) for x in ss])
+                self.frequent_patterns['set_item'] = self.frequent_patterns['itemsets'].apply(lambda ss: [list(x) for x in ss])
                 st.success('Association Rule Berhasil dibentuk!')
 
 
@@ -462,7 +462,7 @@ class Strimlit(object):
         with koll2:                   
             st.write(outFP,use_container_width=True)
 
-            st.write(outFP.columns)
+            # st.write(outFP.columns)
 
 
         
