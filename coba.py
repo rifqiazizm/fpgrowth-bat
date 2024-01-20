@@ -21,7 +21,7 @@ class Strimlit(object):
 
 
     def __init__(self):
-        self.title = 'Implementasi BAT Algorithm pada FP-Growth'
+        self.title = 'Pembentukan Aturan Aosiasi Algoritma FP Growth'
         self.sub = 'Upload File transaksi anda'
         self.df_bat = pd.DataFrame()
         self.df_result = pd.DataFrame()
@@ -61,7 +61,8 @@ class Strimlit(object):
             return 0
         rule_ = association_rules(frequent_patterns, metric="confidence", min_threshold= min_confidence)
         
-        return  rule_['confidence'].mean() / rule_['support'].mean()
+        # return  rule_['confidence'].mean() / rule_['support'].mean()
+        return rule_['lift'].mean()
 
 
 
@@ -404,24 +405,24 @@ class Strimlit(object):
                     """,unsafe_allow_html=True)
         st.markdown("***") 
 
-        kolom1,kolom2 = st.columns(2)
-        st.text("")
-        st.text("")  
+        # kolom1,kolom2 = st.columns(2)
+        # st.text("")
+        # st.text("")  
         
 
-        with kolom1:
-            st.image('fp-growth.png',caption="",use_column_width=True)
+        # with kolom1:
+        #     st.image('fp-growth.png',caption="",use_column_width=True)
 
 
-        with kolom2:
-            st.text("")
-            st.text("")  
-            st.text("")
-            st.text("")
-            st.text("")  
-            st.text("")
-            st.text("")  
-            st.markdown(' ##### The FP-Growth Algorithm is an alternative way to find frequent item sets without using candidate generations, thus improving performance. For so much, it uses a divide-and-conquer strategy. The core of this method is the usage of a special data structure named frequent-pattern tree (FP-tree), which retains the item set association information.')
+        # with kolom2:
+        #     st.text("")
+        #     st.text("")  
+        st.text("")
+        st.text("")
+        # st.text("")  
+        # st.text("")
+        # st.text("")  
+        #     st.markdown(' ##### The FP-Growth Algorithm is an alternative way to find frequent item sets without using candidate generations, thus improving performance. For so much, it uses a divide-and-conquer strategy. The core of this method is the usage of a special data structure named frequent-pattern tree (FP-tree), which retains the item set association information.')
 
         
 
@@ -447,8 +448,9 @@ class Strimlit(object):
                 te_ary = te.fit(transactions).transform(transactions)
                 self.df_encoded = pd.DataFrame(te_ary, columns=te.columns_)
                 st.toast('FP Growth Sedang Dieksekusi dengan dataframe' +str(len(self.df_encoded)))
-                outFP = self.fpGrowth(float(minSupport), float(minConfidence), self.df_encoded)
+                outFP = self.fpGrowth(float(minSupport), float(minConfidence), self.df_encoded).copy()
                     # viz = st.bar_chart(self.frequent_patterns.sort_values(by='support',ascending=False).head(10))
+                # outFP['set_item'] = outFP['itemsets'].apply(lambda ss: [list(x) for x in ss])
                 st.success('Association Rule Berhasil dibentuk!')
 
 
@@ -459,6 +461,8 @@ class Strimlit(object):
         
         with koll2:                   
             st.write(outFP,use_container_width=True)
+
+            st.write(outFP.columns)
 
 
         
