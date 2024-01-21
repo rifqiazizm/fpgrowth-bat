@@ -381,11 +381,11 @@ class Strimlit(object):
             with tt1:
 
                 st.markdown(" #### Grafik nilai support terhadap obj function")
-                st.line_chart(dfOut,y='support',x='output',use_container_width=True)     
+                st.line_chart(dfOut,x='support',y='output',use_container_width=True)     
 
             with tt2:
                 st.markdown(" #### Grafik nilai Confidence terhadap obj function")
-                st.line_chart(dfOut,y='confidence',x='output',use_container_width=True)          
+                st.line_chart(dfOut,x='confidence',y='output',use_container_width=True)          
             
                  
 
