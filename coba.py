@@ -77,15 +77,15 @@ class Strimlit(object):
         pulse_rate = float(pulse_rate)  # Inisialisasi nilai pulse rate
         lower_freq = 0.0002983
         highest_freq = 0.000923
-        trig = 0
+
         # Inisialisasi posisi kelelawar secara acak di dalam batas pencarian
         bats = np.random.uniform(lower_bound, upper_bound, (int(num_bats), num_dimensions))
         # Inisialisasi kecepatan dan posisi awal
         velocities = np.zeros((int(num_bats), num_dimensions))
         frequencies = np.zeros(int(num_bats))
-        
+        trig=0
         # Inisialisasi posisi terbaik
-        best_solution_index = 0
+        # best_solution_index = 0
         best_solution = [0,0]
         outputFunc = np.zeros(int(num_bats))
         proses = 0
@@ -381,11 +381,11 @@ class Strimlit(object):
             with tt1:
 
                 st.markdown(" #### Grafik nilai support terhadap obj function")
-                st.line_chart(dfOut,x='support',y='output',use_container_width=True)     
+                st.line_chart(dfOut,y='support',x='output',use_container_width=True)     
 
             with tt2:
                 st.markdown(" #### Grafik nilai Confidence terhadap obj function")
-                st.line_chart(dfOut,x='confidence',y='output',use_container_width=True)          
+                st.line_chart(dfOut,y='confidence',x='output',use_container_width=True)          
             
                  
 
@@ -449,7 +449,7 @@ class Strimlit(object):
                 self.df_encoded = pd.DataFrame(te_ary, columns=te.columns_)
                 st.toast('FP Growth Sedang Dieksekusi dengan dataframe' +str(len(self.df_encoded)))
                 outFP = self.fpGrowth(float(minSupport), float(minConfidence), self.df_encoded).copy()
-                
+
                     # viz = st.bar_chart(self.frequent_patterns.sort_values(by='support',ascending=False).head(10))
                 self.frequent_patterns['itemsets'] = self.frequent_patterns['itemsets'].apply(lambda ss: [x for x in ss])
                 st.success('Association Rule Berhasil dibentuk!')
