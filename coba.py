@@ -484,7 +484,7 @@ class Strimlit(object):
         st.text("")
         st.text("")   
 
-        if len(df) > 0:
+        if df:
             qtySales = df[['area','id_produk']].groupby('id_produk').count().reset_index().copy()
             lowSales =  qtySales[qtySales['area'] == 1]['id_produk'].tolist()
             highSales = qtySales.sort_values(by='area',ascending=False)['id_produk'].head(50).tolist()
