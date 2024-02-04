@@ -170,6 +170,7 @@ class Strimlit(object):
 
 
     def main(self):
+        df=pd.DataFrame()
         
         st.set_page_config(page_title="Association Rule ",layout='wide')
         
