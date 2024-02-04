@@ -170,7 +170,7 @@ class Strimlit(object):
 
 
     def main(self):
-        df=pd.DataFrame()
+        # df=pd.DataFrame()
         
         st.set_page_config(page_title="Association Rule ",layout='wide')
         
@@ -482,19 +482,21 @@ class Strimlit(object):
         st.text("")
         st.text("")  
         st.text("")
-        st.text("")     
-        qtySales = df[['area','id_produk']].groupby('id_produk').count().reset_index().copy()
-        lowSales =  qtySales[qtySales['area'] == 1]['id_produk'].tolist()
-        highSales = qtySales.sort_values(by='area',ascending=False)['id_produk'].head(50).tolist()
+        st.text("")   
 
-        if st.button("Tampilkan item Consequent dengan Penjualan Terendah",type='primary'):
+        if len(df) > 0:
+            qtySales = df[['area','id_produk']].groupby('id_produk').count().reset_index().copy()
+            lowSales =  qtySales[qtySales['area'] == 1]['id_produk'].tolist()
+            highSales = qtySales.sort_values(by='area',ascending=False)['id_produk'].head(50).tolist()
 
-            outFP['conseqConvert'] = outFP['consequents'].apply(lambda x: [a for a in x ])
-            st.write(outFP[ outFP['conseqConvert'].apply(lambda x: True if True in [ True if a in lowSales else False for a in x ] else False) ])
+            if st.button("Tampilkan item Consequent dengan Penjualan Terendah",type='primary'):
+
+                outFP['conseqConvert'] = outFP['consequents'].apply(lambda x: [a for a in x ])
+                st.write(outFP[ outFP['conseqConvert'].apply(lambda x: True if True in [ True if a in lowSales else False for a in x ] else False) ])
+                
+            if st.button("Tampilkan item Consequent dengan Penjualan Tertinggi",type='primary'):
+                st.write(outFP[ outFP['conseqConvert'].apply(lambda x: True if True in [ True if a in highSales else False for a in x ] else False) ])
             
-        if st.button("Tampilkan item Consequent dengan Penjualan Tertinggi",type='primary'):
-            st.write(outFP[ outFP['conseqConvert'].apply(lambda x: True if True in [ True if a in highSales else False for a in x ] else False) ])
-        
                     
         
                     
