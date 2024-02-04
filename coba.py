@@ -202,7 +202,7 @@ class Strimlit(object):
             df = pd.read_csv(file_upload)
             st.dataframe(df.head(10),use_container_width=True)
             st.text("")
-            st.toast('File berhasil di upload, sedang convert ke dataframe')
+            st.toast('File berhasil terdeteksi, sedang convert ke dataframe')
 
            
         with st.spinner('Creating Graph from dataframe'):
@@ -240,7 +240,20 @@ class Strimlit(object):
 
                     st.pyplot(fig1)
 
-               
+
+                cekUniq = df[df[['order_no','order_date','amount_sales_order','id_produk','qty_sales_order']].duplicated(keep=False)]
+                cekTrx = df[df['qty_sales_order'] == 0 ]
+
+
+                st.warning('Jumlah Data duplikat ='+ str(len(cekUniq)))
+                st.warning('Jumlah Data Transaksi Tidak Bernilai = ' +str(len(cekTrx)))
+
+
+                with st.spinner("Data sedang di cleaning"):
+                    if st.button("Bersihkan Data ",type='secondary'):
+                        df.drop_duplicates(inplace=True,keep='first')
+                        st.toast("Data Duplikat Berhasil Dihapus")
+                
 
         st.markdown("***")
        
@@ -465,7 +478,23 @@ class Strimlit(object):
 
             # st.write(outFP.columns)
 
+        st.text("")
+        st.text("")  
+        st.text("")
+        st.text("")     
+        qtySales = df[['area','id_produk']].groupby('id_produk').count().reset_index().copy()
+        lowSales =  qtySales[qtySales['area'] == 1]['id_produk'].tolist()
+        highSales = qtySales.sort_values(by='area',ascending=False)['id_produk'].head(50).tolist()
 
+        if st.button("Tampilkan item Consequent dengan Penjualan Terendah",type='primary'):
+
+            outFP['conseqConvert'] = outFP['consequents'].apply(lambda x: [a for a in x ])
+            st.write(outFP[ outFP['conseqConvert'].apply(lambda x: True if True in [ True if a in lowSales else False for a in x ] else False) ])
+            
+        if st.button("Tampilkan item Consequent dengan Penjualan Tertinggi",type='primary'):
+            st.write(outFP[ outFP['conseqConvert'].apply(lambda x: True if True in [ True if a in highSales else False for a in x ] else False) ])
+        
+                    
         
                     
 
